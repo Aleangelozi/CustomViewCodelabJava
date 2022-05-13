@@ -4,19 +4,18 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
+import android.graphics.Path;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
-
-import java.util.List;
 
 public class SimpleDrawingView extends View {
     // setup initial color
     private final int paintColor = Color.BLACK;
     // defines paint and canvas
     private Paint drawPaint;
-    // Store circles to draw each time the user touches down
-    private List<Point> circlePoints;
+    // stores next circle
+    private Path path = new Path();
 
     public SimpleDrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -25,18 +24,8 @@ public class SimpleDrawingView extends View {
         setupPaint();
     }
 
-    // Let's draw three circles
-    @Override
-    protected void onDraw(Canvas canvas) {
-        canvas.drawCircle(50, 50, 20, drawPaint);
-        drawPaint.setColor(Color.GREEN);
-        canvas.drawCircle(50, 150, 20, drawPaint);
-        drawPaint.setColor(Color.BLUE);
-        canvas.drawCircle(50, 250, 20, drawPaint);
-    }
-
-    // Setup paint with color and stroke styles
     private void setupPaint() {
+        // Setup paint with color and stroke styles
         drawPaint = new Paint();
         drawPaint.setColor(paintColor);
         drawPaint.setAntiAlias(true);
@@ -44,5 +33,30 @@ public class SimpleDrawingView extends View {
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.drawPath(path, drawPaint);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float pointX = event.getX();
+        float pointY = event.getY();
+        // Checks for the event that occurs
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                path.moveTo(pointX, pointY);
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                path.lineTo(pointX, pointY);
+                break;
+            default:
+                return false;
+        }
+        // Force a view to draw again
+        postInvalidate();
+        return true;
     }
 }
